@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "types": ["solid-start/env"],
+    "baseUrl": "./",
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ]
+    },
+  }
+}
