@@ -12,7 +12,6 @@ import {
   Scripts,
   Title,
 } from 'solid-start';
-import 'bedrocss';
 import './root.css';
 export default function Root() {
   return (
@@ -27,9 +26,11 @@ export default function Root() {
           <ErrorBoundary>
             <A href="/">Index</A>
             <A href="/about">About</A>
-            <Routes>
-              <FileRoutes />
-            </Routes>
+            <div class="max-w-4xl mx-auto xl p-4">
+              <Routes>
+                <FileRoutes />
+              </Routes>
+            </div>
           </ErrorBoundary>
         </Suspense>
         <Scripts />
