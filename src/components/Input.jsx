@@ -1,6 +1,7 @@
-import { splitProps } from 'solid-js';
+import { splitProps, onMount, For } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import { Dynamic } from 'solid-js/web';
-import { randomString } from '../utils.js';
+import { randomString, isType } from '../utils.js';
 
 /**
  * @typedef {import("solid-js").JSX.InputHTMLAttributes<HTMLInputElement>} InputAttributes
@@ -8,43 +9,125 @@ import { randomString } from '../utils.js';
  * @typedef {import("solid-js").JSX.TextareaHTMLAttributes<HTMLTextAreaElement>} TextareaAttributes
  */
 
-/**
- * @param {InputAttributes & SelectAttributes & TextareaAttributes & {
- * name: string,
- * label: string,
- * id?: string,
- * type?: "button"|"checkbox"|"color"|"date"|"datetime-local"|"email"|"file"|"hidden"|"image"|"month"|"number"|"password"|"radio"|"range"|"reset"|"search"|"submit"|"tel"|"text"|"time"|"url"|"week"|"textarea"|'select'
- * }} p
- */
-export default function (p) {
-  const [local, props] = splitProps(p, ['class', 'label', 'type', 'value']);
-  props.id = props.id ?? `id_${randomString(6)}`;
+export function createInput() {
+  const [state, setState] = createStore({
+    valid: true,
+    dirty: false,
+  });
 
-  let tag;
-  let children = props.children;
+  /**
+   * @param {InputAttributes & SelectAttributes & TextareaAttributes & {
+   * name: string,
+   * label: string,
+   * id?: string,
+   * type?: "button"|"checkbox"|"color"|"date"|"datetime-local"|"email"|"file"|"hidden"|"image"|"month"|"number"|"password"|"radio"|"range"|"reset"|"search"|"submit"|"tel"|"text"|"time"|"url"|"week"|"textarea"|'select',
+   * options?: Array<string | { label: string, value: string }>
+   * }} p
+   */
+  function Input(p) {
+    const [local, props] = splitProps(p, [
+      'class',
+      'label',
+      'type',
+      'value',
+      'options',
+    ]);
+    props.id = props.id ?? `id_${randomString(6)}`;
 
-  if ('textarea' === local.type) {
-    tag = 'textarea';
-    children = local.value ?? '';
-  } else if ('select' === local.type) {
-    tag = 'select';
-  } else {
-    tag = 'input';
-    props.type = local.type;
-    if (local.value != undefined) {
-      props.value = local.value;
+    const isRadioCheckbox = ['radio', 'checkbox'].includes(local.type);
+    const localOptions = (local.options ?? []).map((item, index) => {
+      item = isType(item, 'object') ? item : { value: item, label: item };
+      // Object.assign(item, props);
+      if (isRadioCheckbox) {
+        item.id = `${props.id}__input${index}`;
+        item.type = local.type;
+        item.name = props.name;
+      }
+      return item;
+    });
+    const isFieldset = isRadioCheckbox && localOptions.length;
+
+    let tag;
+    /** @type {HTMLInputElement|undefined} */
+    let input;
+
+    if ('textarea' === local.type) {
+      tag = 'textarea';
+    } else if ('select' === local.type) {
+      tag = 'select';
+    } else {
+      tag = 'input';
+      props.type = local.type;
+      if (local.value != undefined) {
+        props.value = local.value;
+      }
     }
+
+    function validate() {
+      if (!input) return;
+      setState({
+        valid: input.checkValidity(),
+      });
+    }
+    onMount(() => {
+      validate();
+    });
+    function onBlur() {
+      setState({
+        dirty: true,
+      });
+      validate();
+    }
+
+    return (
+      <div
+        class={local.class ? local.class : ''}
+        classList={{ _dirty: state.dirty }}
+      >
+        {isFieldset && (
+          <fieldset>
+            <legend>{local.label}</legend>
+            <For each={localOptions}>
+              {(option) => (
+                <>
+                  <input {...option} />
+                  <label for={option.id}>{option.label}</label>
+                </>
+              )}
+            </For>
+          </fieldset>
+        )}
+        {!isFieldset && (
+          <>
+            <label for={props.id}>{local.label}</label>
+            <Dynamic
+              ref={input}
+              component={tag}
+              {...props}
+              onInput={validate}
+              onBlur={onBlur}
+            >
+              {tag === 'textarea' && (local.value ?? '')}
+              {tag === 'select' &&
+                localOptions.map((option) => (
+                  <option {...option} label={null}>
+                    {option.label}
+                  </option>
+                ))}
+            </Dynamic>
+          </>
+        )}
+
+        {props.children}
+      </div>
+    );
   }
+  Input.state = state;
 
-  const isLabelAfter = ['radio', 'checkbox'].includes(local.type);
-
-  return (
-    <div classList={{ [local.class]: !!local.class }}>
-      {!isLabelAfter && <label for={props.id}>{local.label}</label>}
-      <Dynamic component={tag} class="" {...props}>
-        {children}
-      </Dynamic>
-      {isLabelAfter && <label for={props.id}>{local.label}</label>}
-    </div>
-  );
+  return Input;
 }
+
+const globalInput = createInput();
+delete globalInput.state;
+
+export default globalInput;

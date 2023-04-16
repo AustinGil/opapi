@@ -1,9 +1,11 @@
-import server$, { createServerAction$, eventStream } from 'solid-start/server';
-import { createEffect, createSignal, onCleanup, Show, onMount } from 'solid-js';
+import server$ from 'solid-start/server';
+import { createSignal } from 'solid-js';
 import { z } from 'zod';
+import { zfd } from 'zod-form-data';
 import { createParser } from 'eventsource-parser';
 import { openai, uploads } from '../services/index.js';
-import { Input, Button } from '../components';
+import { createForm, Input, createInput, Button } from '../components';
+import { listFormatter } from '../utils.js';
 
 /**
  * @see https://github.com/Nutlope/twitterbio/blob/main/utils/OpenAIStream.ts
@@ -15,8 +17,7 @@ function createOpenAIStream(response) {
 
   return new ReadableStream({
     async start(controller) {
-      /** @param {import('eventsource-parser').ParsedEvent | import('eventsource-parser').ReconnectInterval} event */
-      function onParse(event) {
+      const parser = createParser((event) => {
         if (event.type === 'event') {
           const data = event.data;
 
@@ -25,17 +26,9 @@ function createOpenAIStream(response) {
             return;
           }
           try {
-            /**
-             * Completion Data:
-             * data: {"id": "cmpl-74e2oF4Hoqfz5duNHWKXjvM0ANCGp", "object": "text_completion", "created": 1681341598, "choices": [{"text": "\n", "index": 0, "logprobs": null, "finish_reason": null}], "model": "text-davinci-003"}
-             *
-             * Chat Completion Data:
-             * data: {"id":"chatcmpl-74e5W3iHLdixvxeqOUEHrOY0vzrN5","object":"chat.completion.chunk","created":1681341766,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"role":"assistant"},"index":0,"finish_reason":null}]}
-             */
             const json = JSON.parse(data);
             const text = json.choices[0].text || '';
-            // const text = json.choices[0].delta?.content || '';
-            if (counter < 2 && (text.match(/\n/) || []).length > 0) {
+            if (counter < 2 && /\n/.test(text)) {
               return;
             }
             controller.enqueue(text);
@@ -44,9 +37,7 @@ function createOpenAIStream(response) {
             controller.error(error);
           }
         }
-      }
-
-      const parser = createParser(onParse);
+      });
       for await (const chunk of response.data) {
         parser.feed(decoder.decode(chunk));
       }
@@ -55,14 +46,39 @@ function createOpenAIStream(response) {
 }
 
 const routeAction = server$(async function (formData) {
-  const prompt = z.string().parse(formData.get('prompt'));
+  const data = zfd
+    .formData({
+      name: zfd.text(),
+      age: zfd.numeric(),
+      motivations: zfd.repeatable(z.array(zfd.text()).min(1)), // zfd.checkbox(),
+      breed: zfd.repeatable(z.array(zfd.text()).min(1)), // zfd.checkbox(),
+      prompt: zfd.text(),
+    })
+    .parse(formData);
+
+  // const prompt = z.string().parse(formData.get('prompt'));
+  const breed =
+    data.breed?.length > 1
+      ? `a combination of these: ${data.breed.join(', ')}`
+      : data.breed[0];
+
+  const payload = `I want you to act as a dog. Your name is ${data.name
+    }. You are ${data.age
+    } years old. Your breed is ${breed}. You are very motivated by ${listFormatter(
+      data.motivations
+    )}. Do not write any explanations. Only answer like ${data.name
+    }. Here's my question for you: ${data.prompt}`;
+  // const character = z.string().parse(formData.get('character'));
+  // const prompt = z.string().parse(formData.get('prompt'));
+
+  // const payload = `I want you to act like ${character}. I want you to respond and answer like ${character} using the tone, manner and vocabulary ${character} would use. Do not write any explanations. Only answer like ${character}. You must know all of the knowledge of ${character}. My first sentence is "Hi ${character}. Can you please explain the following code: ${prompt}"`;
 
   const response = await openai.createCompletion(
     {
       model: 'text-davinci-003',
-      prompt: prompt,
+      prompt: payload,
       temperature: 0,
-      max_tokens: 10,
+      max_tokens: 1000,
       stream: true,
     },
     { responseType: 'stream' }
@@ -74,11 +90,13 @@ const routeAction = server$(async function (formData) {
 
 export default function () {
   let [state, setState] = createSignal('');
+  const Form1 = createForm();
   /**
    * @param {SubmitEvent} event
    */
   async function handleSubmit(event) {
     event.preventDefault();
+    setState('');
     const form = /** @type {HTMLFormElement} */ (event.target);
     const url = new URL(form.action);
     const response = await fetch(url, {
@@ -106,19 +124,66 @@ export default function () {
     }
   }
 
+  const characterOptions = ['Harry Potter', 'Darth Vader'];
+
   return (
     <main>
-      {state()}
-      <form action={routeAction.url} method="post" onSubmit={handleSubmit}>
+      <h1 class="text-3xl">Talk to your dog AI</h1>
+      {/* <h1 class="text-3xl">Choose a charater to tell you about your code</h1> */}
+      <Form1 action={routeAction.url} method="post" onSubmit={handleSubmit}>
+        <Input label="Name" name="name" required value="Nugget" />
+        <Input
+          label="Breed"
+          name="breed"
+          type="checkbox"
+          options={[
+            'chihuahua',
+            'dachshund',
+            'bulldog',
+            'poodle',
+            'lab',
+            'pincer',
+            'great dane',
+            'chow',
+            'shar-pei',
+            'boxer',
+          ]}
+          required
+          class="mb-4"
+        />
+        <Input label="Age" name="age" type="number" required value="6" />
+        <Input
+          label="Motivations"
+          name="motivations"
+          type="checkbox"
+          options={['food', 'walks', 'toys', 'cuddles', 'praise', 'squirrels']}
+          required
+        />
+
+        {/* <Input
+          label="Choose a character"
+          name="character"
+          type="radio"
+          required
+          options={characterOptions}
+        /> */}
         <Input
           label="Give me a prompt"
           name="prompt"
           type="textarea"
-          value="Tell me how Harry Potter would defeat an evil witch"
+          required
+          value="Who's a good boy?"
+          class="mb-4"
         />
-        <Input label="Give me a prompt" name="prompt" type="file" />
-        <Button type="submit">Submit</Button>
-      </form>
+        {/* <Input label="Give me a prompt" name="prompt" type="file">
+          {JSON.stringify(Input.state)}
+        </Input> */}
+        <Button type="submit" aria-disabled={!Form1.valid()}>
+          Submit
+        </Button>
+      </Form1>
+
+      {state()}
     </main>
   );
 }

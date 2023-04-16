@@ -162,3 +162,6 @@ input[type="checkbox"].switch:checked:before {
 body button, body [type="button"], body [type="submit"] {
   background-color: var(--pen);
 }
+input[type="radio"], input[type="checkbox"] {
+  display: inline-block;
+}
