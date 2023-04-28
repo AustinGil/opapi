@@ -24,8 +24,10 @@ export default function Root() {
       <Body>
         <Suspense>
           <ErrorBoundary>
-            <A href="/">Index</A>
-            <A href="/about">About</A>
+            <div class="flex gap-4 px-4">
+              <A href="/">Index</A>
+              <A href="/transcribe">Transcribe</A>
+            </div>
             <div class="max-w-4xl mx-auto xl p-4">
               <Routes>
                 <FileRoutes />

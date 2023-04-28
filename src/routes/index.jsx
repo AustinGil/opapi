@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { zfd } from 'zod-form-data';
 import { createParser } from 'eventsource-parser';
 import { openai, uploads } from '../services/index.js';
-import { createForm, Input, createInput, Button } from '../components';
+import { Form, Input, Button } from '../components';
 import { listFormatter } from '../utils.js';
 
 /**
@@ -90,7 +90,6 @@ const routeAction = server$(async function (formData) {
 
 export default function () {
   let [state, setState] = createSignal('');
-  const Form1 = createForm();
   /**
    * @param {SubmitEvent} event
    */
@@ -130,58 +129,69 @@ export default function () {
     <main>
       <h1 class="text-3xl">Talk to your dog AI</h1>
       {/* <h1 class="text-3xl">Choose a charater to tell you about your code</h1> */}
-      <Form1 action={routeAction.url} method="post" onSubmit={handleSubmit}>
-        <Input label="Name" name="name" required value="Nugget" />
-        <Input
-          label="Breed"
-          name="breed"
-          type="checkbox"
-          options={[
-            'chihuahua',
-            'dachshund',
-            'bulldog',
-            'poodle',
-            'lab',
-            'pincer',
-            'great dane',
-            'chow',
-            'shar-pei',
-            'boxer',
-          ]}
-          required
-          class="mb-4"
-        />
-        <Input label="Age" name="age" type="number" required value="6" />
-        <Input
-          label="Motivations"
-          name="motivations"
-          type="checkbox"
-          options={['food', 'walks', 'toys', 'cuddles', 'praise', 'squirrels']}
-          required
-        />
+      <Form action={routeAction.url} method="post" onSubmit={handleSubmit}>
+        {(form) => (
+          <>
+            <Input label="Name" name="name" required value="Nugget" />
+            <Input
+              label="Breed"
+              name="breed"
+              type="checkbox"
+              options={[
+                'chihuahua',
+                'dachshund',
+                'bulldog',
+                'poodle',
+                'lab',
+                'pincer',
+                'great dane',
+                'chow',
+                'shar-pei',
+                'boxer',
+              ]}
+              required
+              class="mb-4"
+            />
+            <Input label="Age" name="age" type="number" required value="6" />
+            <Input
+              label="Motivations"
+              name="motivations"
+              type="checkbox"
+              options={[
+                'food',
+                'walks',
+                'toys',
+                'cuddles',
+                'praise',
+                'squirrels',
+              ]}
+              required
+            />
 
-        {/* <Input
+            {/* <Input
           label="Choose a character"
           name="character"
           type="radio"
           required
           options={characterOptions}
         /> */}
-        <Input
-          label="Give me a prompt"
-          name="prompt"
-          type="textarea"
-          required
-          value="Who's a good boy?"
-          class="mb-4"
-        />
-        {/* <Input label="Give me a prompt" name="prompt" type="file">
+            <Input
+              label="Give me a prompt"
+              name="prompt"
+              type="textarea"
+              required
+              value="Who's a good boy?"
+              class="mb-4"
+            />
+            {/* <Input label="Give me a prompt" name="prompt" type="file">
           {JSON.stringify(Input.state)}
         </Input> */}
-        <Button type="submit" aria-disabled={!Form1.valid()}>
-          Submit
-        </Button>
-      </Form1>
+            <Button type="submit" aria-disabled={!form.valid}>
+              Submit
+            </Button>
+          </>
+        )}
+      </Form>
 
       {state()}
     </main>
