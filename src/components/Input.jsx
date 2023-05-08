@@ -73,9 +73,7 @@ export function createInput() {
       validate();
     });
     function onBlur() {
-      setState({
-        dirty: true,
-      });
+      setState({ dirty: true });
       validate();
     }
 

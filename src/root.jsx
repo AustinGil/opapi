@@ -13,6 +13,7 @@ import {
   Title,
 } from 'solid-start';
 import './root.css';
+
 export default function Root() {
   return (
     <Html lang="en">
@@ -27,6 +28,8 @@ export default function Root() {
             <div class="flex gap-4 px-4">
               <A href="/">Index</A>
               <A href="/transcribe">Transcribe</A>
+              <A href="/alignment">Alignment</A>
+              <A href="/vs">VS.</A>
             </div>
             <div class="max-w-4xl mx-auto xl p-4">
               <Routes>

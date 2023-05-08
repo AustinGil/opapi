@@ -97,8 +97,9 @@ module.exports = {
       'error',
       {
         replacements: {
-          props: false,
           attrs: false,
+          db: false,
+          props: false,
         },
       },
     ],

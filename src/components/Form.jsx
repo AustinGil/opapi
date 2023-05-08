@@ -92,6 +92,8 @@ export default (props) => {
     }
   };
 
+  const children = props.children;
+
   return (
     <form
       ref={form}
@@ -101,10 +103,10 @@ export default (props) => {
       oncapture:blur={validate}
       onSubmit={onSubmit}
     >
-      {typeof props.children === 'function'
+      {typeof children === 'function'
         ? // eslint-disable-next-line prettier/prettier
-        props.children(state)
-        : props.children}
+        children(state)
+        : children}
     </form>
   );
 };

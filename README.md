@@ -28,3 +28,14 @@ npm run dev -- --open
 Solid apps are built with _adapters_, which optimise your project for deployment to different environments.
 
 By default, `npm run build` will generate a Node app that you can run with `npm start`. To use a different adapter, add it to the `devDependencies` in `package.json` and specify in your `vite.config.js`.
+
+## TODO
+
+https://github.com/ggerganov/llama.cpp
+https://llama-node.vercel.app/
+https://github.com/nomic-ai/gpt4all
+https://cocktailpeanut.github.io/dalai/#/
+https://huggingface.co/bigscience/bloom
+https://huggingface.co/databricks/dolly-v2-12b
+https://github.com/stability-AI/stableLM/
+https://github.com/microsoft/prompt-engine

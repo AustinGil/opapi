@@ -2,48 +2,9 @@ import server$ from 'solid-start/server';
 import { createSignal } from 'solid-js';
 import { z } from 'zod';
 import { zfd } from 'zod-form-data';
-import { createParser } from 'eventsource-parser';
-import { openai, uploads } from '../services/index.js';
+import { openai } from '../services/index.js';
 import { Form, Input, Button } from '../components';
 import { listFormatter } from '../utils.js';
-
-/**
- * @see https://github.com/Nutlope/twitterbio/blob/main/utils/OpenAIStream.ts
- * @param {Awaited<ReturnType<typeof openai.createCompletion>>} response
- */
-function createOpenAIStream(response) {
-  const decoder = new TextDecoder();
-  let counter = 0;
-
-  return new ReadableStream({
-    async start(controller) {
-      const parser = createParser((event) => {
-        if (event.type === 'event') {
-          const data = event.data;
-
-          if (data === '[DONE]') {
-            controller.close();
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            const text = json.choices[0].text || '';
-            if (counter < 2 && /\n/.test(text)) {
-              return;
-            }
-            controller.enqueue(text);
-            counter++;
-          } catch (error) {
-            controller.error(error);
-          }
-        }
-      });
-      for await (const chunk of response.data) {
-        parser.feed(decoder.decode(chunk));
-      }
-    },
-  });
-}
 
 const routeAction = server$(async function (formData) {
   const data = zfd
@@ -83,7 +44,7 @@ const routeAction = server$(async function (formData) {
     },
     { responseType: 'stream' }
   );
-  const stream = createOpenAIStream(response);
+  const stream = openai.createStreamFromResponse(response);
 
   return new Response(stream);
 });
