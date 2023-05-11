@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zfd } from 'zod-form-data';
 import { randomString } from '../../utils.js';
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import { db } from '../../services/index.js';
+import { db, uploads } from '../../services/index.js';
 import { Form, Input, Button } from '../../components/index.js';
 
 const { S3_URL, S3_ACCESS_KEY, S3_SECRET_KEY, S3_REGION } = process.env;
