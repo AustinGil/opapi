@@ -29,7 +29,7 @@ export default function Root() {
               <A href="/">Index</A>
               <A href="/transcribe">Transcribe</A>
               <A href="/alignment">Alignment</A>
-              <A href="/vs">VS.</A>
+              <A href="/versus">Versus</A>
             </div>
             <div class="max-w-4xl mx-auto xl p-4">
               <Routes>

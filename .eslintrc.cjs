@@ -71,10 +71,10 @@ module.exports = {
         ],
       },
     ],
-    // 'jsdoc/require-param-description': 'off',
+    'jsdoc/require-param-description': 'off',
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/require-returns': 'off',
-    // 'jsdoc/require-property-description': 'off',
+    'jsdoc/require-property-description': 'off',
     'jsdoc/valid-types': 'off',
 
     // 'unicorn/explicit-length-check': 'off',
