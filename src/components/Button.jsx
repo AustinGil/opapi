@@ -1,5 +1,6 @@
 import { splitProps } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
+import { Svg } from './index.js';
 
 /**
  * @typedef {import("solid-js").JSX.ButtonHTMLAttributes<HTMLButtonElement>} ButtonAttributes
@@ -8,24 +9,31 @@ import { Dynamic } from 'solid-js/web';
 
 /**
  * @param {ButtonAttributes & AnchorAttributes & {
+ * loading?: boolean
  * }} p
  */
 export default function (p) {
-  const [local, props] = splitProps(p, ['class']);
+  const [local, props] = splitProps(p, ['loading']);
   let tag = 'button';
+  let type = 'button';
   if (props.href) {
     tag = 'A';
   } else {
-    props.type = props.type ?? 'button';
+    type = props.type ?? 'button';
   }
 
   return (
     <Dynamic
       component={tag}
-      class={local.class && ` ${local.class}`}
+      aria-disabled={local.loading || props['aria-disabled']}
+      type={type}
       {...props}
     >
-      {props.children}
+      {local.loading ? (
+        <Svg icon="icon-spinner" alt="loading" />
+      ) : (
+        props.children
+      )}
     </Dynamic>
   );
 }

@@ -3,18 +3,13 @@ module.exports = {
   env: {
     browser: true,
     node: true,
-    es6: true,
   },
   parserOptions: {
-    parser: 'babel-eslint',
-    // "ecmaVersion": 6,
+    ecmaVersion: 'latest',
     sourceType: 'module',
     ecmaFeatures: {
       jsx: true,
     },
-  },
-  globals: {
-    fetch: true,
   },
   plugins: [
     '@typescript-eslint',
@@ -31,7 +26,6 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:jsdoc/recommended',
     'plugin:security/recommended',
-    'plugin:unicorn/recommended',
     'plugin:solid/recommended',
     // 'plugin:vue/recommended',
     // "plugin:vuejs-accessibility/recommended",
@@ -74,36 +68,9 @@ module.exports = {
     'jsdoc/require-param-description': 'off',
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/require-returns': 'off',
+    'jsdoc/require-returns-description': 'off',
     'jsdoc/require-property-description': 'off',
     'jsdoc/valid-types': 'off',
-
-    // 'unicorn/explicit-length-check': 'off',
-    'unicorn/filename-case': [
-      'error',
-      {
-        cases: {
-          camelCase: true,
-          pascalCase: true,
-        },
-      },
-    ],
-    'unicorn/no-array-for-each': 'off',
-    // 'unicorn/no-array-reduce': 'off',
-    // 'unicorn/no-null': 'off',
-    // 'unicorn/no-reduce': 'off',
-    // 'unicorn/no-useless-undefined': 'off',
-    // 'unicorn/prefer-ternary': 'off',
-    'unicorn/prevent-abbreviations': [
-      'error',
-      {
-        replacements: {
-          attrs: false,
-          db: false,
-          props: false,
-        },
-      },
-    ],
-    'unicorn/switch-case-braces': 'off',
 
     // 'vue/require-prop-types': ['error']
     // 'vue/max-attributes-per-line': 'off',

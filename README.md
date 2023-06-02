@@ -39,3 +39,33 @@ https://huggingface.co/bigscience/bloom
 https://huggingface.co/databricks/dolly-v2-12b
 https://github.com/stability-AI/stableLM/
 https://github.com/microsoft/prompt-engine
+
+## Outline
+- Nondeterministic output
+- Tokens
+- Prompt Engineering
+  - Problem with blank inputs
+  - It's sort of like learning how to Google 
+  - Setting up credentials
+  - Providing Examples: Zero-shot, one-shot, n-shot
+  - Structured responses (and not)
+    - JSON: good for multiple values. Can't be streamed
+    - Text: can be streamed. unstructured
+- Tooling: LangChain
+  - Templates
+  - Chat memory
+  - Caching
+  - Timeouts
+  - Cancel
+  - Rate limits
+  - Errors
+- Deployment
+- Agents: BabyAGI, AutoGPT
+
+"Apple restricts employees from using ChatGPT over fear of data leaks"
+
+"Rogue Generative AI sites are distributing RedLine Malware"
+
+"US senator introduces bill to create a federal agency to regulate AI"
+
+"European Union Set to Be Trailblazer in Global Rush to Regulate Artificial Intelligence"

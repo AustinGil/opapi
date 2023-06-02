@@ -13,6 +13,7 @@ import {
   Title,
 } from 'solid-start';
 import './root.css';
+import { SvgDefs } from './components/Svg';
 
 export default function Root() {
   return (
@@ -37,6 +38,7 @@ export default function Root() {
               </Routes>
             </div>
           </ErrorBoundary>
+          <SvgDefs />
         </Suspense>
         <Scripts />
       </Body>

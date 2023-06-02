@@ -79,7 +79,7 @@ export function createInput() {
 
     return (
       <div
-        class={local.class ? local.class : ''}
+        class={local.class ? local.class : null}
         classList={{ _dirty: state.dirty }}
       >
         {isFieldset && (

@@ -168,6 +168,15 @@ input[type="checkbox"].switch:checked:before {
   transform: translateX(1em);
 }
 
+dialog {
+  padding: 0;
+  border-radius: .5rem;
+}
+dialog::backdrop {
+  background-color: rgb(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+}
+
 img,
 figure,
 iframe,
@@ -196,4 +205,23 @@ svg {
   margin: -1px;
   border: 0;
   padding: 0;
+}
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+.rainbow {
+  background: linear-gradient(45deg, #cc0000, #c8cc00, #38cc00, #00ccb5, #0015cc, #5f00cc, #c200cc, #cc0000);
+  background-size: 1600% 1600%;
+  animation: AnimationName 2s linear infinite;
+}
+@keyframes AnimationName {
+    0%{background-position:0% 50%}
+    100%{background-position:100% 50%}
+    /* 100%{background-position:0% 50%} */
 }
