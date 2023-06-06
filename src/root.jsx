@@ -38,6 +38,17 @@ export default function Root() {
               </Routes>
             </div>
           </ErrorBoundary>
+          <footer class="my-10 sm:mt-20 px-4 text-center">
+            <p>
+              Built by <a href="https://austingil.com">Austin Gil</a>. Powered
+              by <a href="https://www.akamai.com/">Akamai Connected Cloud</a>.
+            </p>
+            <p>
+              <a href="https://linode.com/austingil">
+                Get $100 in free cloud computing credits.
+              </a>
+            </p>
+          </footer>
           <SvgDefs />
         </Suspense>
         <Scripts />

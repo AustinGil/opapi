@@ -7,23 +7,26 @@ import { PromptTemplate } from 'langchain';
 import { OpenAI } from 'langchain/llms/openai';
 import party from 'party-js';
 import { openai } from '../../services/index.js';
-import { Form, Input, Button, Dialog, Svg } from '../../components/index.js';
-import { STABILITY_API_KEY } from '../../config.js';
+import {
+  Form,
+  Input,
+  Button,
+  Svg,
+  Card,
+  Dialog,
+} from '../../components/index.js';
 import { jsSubmitForm } from '../../utils.js';
 
 const fightPairs = [
-  // ['Water bender', 'Fire bender'],
-  // ['Dogs', 'Cats'],
-  // ['Star Trek cosplayers', 'Star Wars fan boys'],
   ['A dragon', 'A chimera'],
   ['A werewolf', 'A vampire'],
   ['Zeus', 'Hades'],
   ['A pirate', 'A ninja'],
   ['A knight', 'A viking'],
   ['Sherlock Holmes', 'Hercule Poirot'],
-  // ['Unstoppable force', 'Immovable object'],
-  // ['One horse-sized duck', '100 duck-sized horses'],
-  // ['A bear with sharks for arms', 'A shark with bears for arms'],
+  ['A ghost', 'A demon'],
+  ['A squirrel', 'A rabbit'],
+  ['An oak tree', 'A tractor'],
 ];
 
 const routeAction = server$(async function (formData) {
@@ -46,15 +49,9 @@ const routeAction = server$(async function (formData) {
   // );
   // const stream = openai.createStreamFromResponse(response);
 
-  // const parser = StructuredOutputParser.fromNamesAndDescriptions({
-  //   winner: "winner's label (opponent1 or opponent2)",
-  //   reasoning: 'reasoning',
-  // });
-  // const formatInstructions = parser.getFormatInstructions();
   const prompt = new PromptTemplate({
     template: `Battle of {opponent1} ("opponent1") vs {opponent2} ("opponent2")? Provide a creative and details explanation why they would win and what tactics they would employ. Format the response as "winner: 'opponent1' or 'opponent2'. reason: the reason they won." Return the winner using only their label ("opponent1" or "opponent2") and not their name.`,
     inputVariables: ['opponent1', 'opponent2'],
-    // partialVariables: { format_instructions: formatInstructions },
   });
   const input = await prompt.format({ opponent1, opponent2 });
 
@@ -75,9 +72,6 @@ const routeAction = server$(async function (formData) {
     },
   });
   return new Response(stream);
-
-  // const response = await model.call(input);
-  // return parser.parse(response);
 });
 
 const createImgAction = server$(async function (formData) {
@@ -190,28 +184,27 @@ const createImgAction = server$(async function (formData) {
 });
 
 export default function () {
-  const pair = fightPairs[Math.floor(Math.random() * fightPairs.length)];
-
   const [getState, setState] = createStore({
     text: '',
     loading: false,
     winner: '',
-    reason: '',
   });
 
   const [getOptions, setOptions] = createStore({
-    opponent1: pair[0],
-    opponent2: pair[1],
+    opponent1: '',
+    opponent2: '',
   });
-  // TODO: make options reactively reference state
-  // const predictionOptions = [
-  //   '',
-  //   { label: 'Opponent 1', value: 'opponent1' },
-  //   { label: 'Opponent 2', value: 'opponent2' },
-  // ];
   const handleOpponentInput = (stateKey) => (event) => {
     setOptions({ [stateKey]: event.target.value });
   };
+  function setRandomFight() {
+    const pair = fightPairs[Math.floor(Math.random() * fightPairs.length)];
+    setState({ winner: '', text: '' });
+    setOptions({
+      opponent1: pair[0],
+      opponent2: pair[1],
+    });
+  }
 
   /** @param {SubmitEvent} event */
   async function handleSubmitFight(event) {
@@ -224,13 +217,12 @@ export default function () {
       },
     });
 
-    const matchPattern = /winner:\s+(\w+)\.\s+reason:\s+(.*)/gi;
+    const matchPattern = /winner:\s+(\w+)\.\s+reason:\s+.*/gi;
     const matches = matchPattern.exec(getState.text);
 
     setState({
       loading: false,
       winner: matches?.length ? matches[1].toLowerCase() : undefined,
-      reason: matches?.length ? matches[2] : undefined,
     });
     const winnerInput = document.querySelector(
       `textarea[name=${getState.winner}]`
@@ -265,15 +257,16 @@ export default function () {
 
   return (
     <main>
-      <h1 class="text-3xl">Who Would Win In A Fight Between...</h1>
+      <h1 class="text-3xl my-8">Who Would Win In A Fight Between...</h1>
+
       <Form
         action={routeAction.url}
         method="post"
         class="grid gap-4"
         onSubmit={handleSubmitFight}
-        onFocus={() => setState({ winner: '' })}
+        oncapture:input={() => setState({ winner: '' })}
       >
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid sm:grid-cols-2 gap-4">
           <Input
             label={
               getState.winner === 'opponent1'
@@ -309,19 +302,30 @@ export default function () {
           />
         </div>
 
-        {/* TODO: Add random fight generator */}
-
-        <div>
+        <div class="flex gap-4 items-center">
           <Button
             type={getState.loading ? 'button' : 'submit'}
             loading={getState.loading}
           >
             Tell me
           </Button>
+
+          <Button
+            type="button"
+            class="inline-grid !border-transparent !p-0 text-3xl !text-inherit !bg-transparent"
+            onClick={setRandomFight}
+            title="Generate pair"
+          >
+            <Svg icon="icon-dice" alt="Random" />
+          </Button>
         </div>
       </Form>
 
-      {!!getState.text.length && <p>{getState.text.slice(29)}</p>}
+      {!!getState.text.length && (
+        <Card class="my-4">
+          <p>{getState.text.slice(29)}</p>
+        </Card>
+      )}
 
       {getState.winner && (
         <Form
@@ -368,6 +372,11 @@ export default function () {
           />
         </Show>
       </Dialog>
+
+      <p class="mt-10 sm:mt-20 text-center">
+        Disclaimer: This app uses AI, which means things may come out a lil
+        wonky sometimes
+      </p>
     </main>
   );
 }
