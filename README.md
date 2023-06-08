@@ -39,10 +39,30 @@ https://huggingface.co/bigscience/bloom
 https://huggingface.co/databricks/dolly-v2-12b
 https://github.com/stability-AI/stableLM/
 https://github.com/microsoft/prompt-engine
+https://github.com/imartinez/privateGPT
+https://github.com/eugeneyan/open-llms
+https://github.com/go-skynet/LocalAI
 
 ## Outline
-- Nondeterministic output
-- Tokens
+- Project Setup
+  - Prerequisites (Node.js, NPM, OpenAI account, Akamai account for deployment)
+  - Copy some components
+  - Copy some CSS
+- Making your first request to OpenAI
+  - Making fetch requests
+  - env variables
+  - Solid.js server$
+- OpenAI client library
+  - Learning about AI
+  - Tokens
+  - Nondeterministic output
+  - Temperature
+- Streaming responses
+  - HTTP Streaming https://gist.github.com/CMCDragonkai/6bfade6431e9ffb7fe88
+  - Browsers natively support chunked data
+  - Node.js Streams https://nodejs.org/api/http.html#http_response_write_chunk_encoding_callback
+  - Streaming with OpenAI
+  - Readable Stream
 - Prompt Engineering
   - Problem with blank inputs
   - It's sort of like learning how to Google 
@@ -51,16 +71,16 @@ https://github.com/microsoft/prompt-engine
   - Structured responses (and not)
     - JSON: good for multiple values. Can't be streamed
     - Text: can be streamed. unstructured
-- Tooling: LangChain
-  - Templates
-  - Chat memory
-  - Caching
-  - Timeouts
-  - Cancel
-  - Rate limits
-  - Errors
+    - Respond with semi structured text
+<!-- - Tooling: LangChain
+  - Features: Chat memory, Caching, Timeouts, Cancel, Rate limits, Errors
+  - Templates -->
 - Deployment
-- Agents: BabyAGI, AutoGPT
+  - Next level with database storing fights
+  - Sharability
+  - Image ownership, object storage, CDN
+  - Self-host LLM
+<!-- - Agents: BabyAGI, AutoGPT -->
 
 "Apple restricts employees from using ChatGPT over fear of data leaks"
 
