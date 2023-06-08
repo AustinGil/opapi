@@ -17,16 +17,58 @@ import {
 } from '../../components/index.js';
 import { jsSubmitForm } from '../../utils.js';
 
-const fightPairs = [
-  ['A dragon', 'A chimera'],
-  ['A werewolf', 'A vampire'],
-  ['Zeus', 'Hades'],
-  ['A pirate', 'A ninja'],
-  ['A knight', 'A viking'],
-  ['Sherlock Holmes', 'Hercule Poirot'],
-  ['A ghost', 'A demon'],
-  ['A squirrel', 'A rabbit'],
-  ['An oak tree', 'A tractor'],
+const allFighters = [
+  // Mythological
+  'Zeus',
+  'Hades',
+  'Hercules',
+  'Cerberus',
+  'Bahamut',
+  'A dragon',
+  'A chimera',
+  'A unicorn',
+  'A centaur',
+  'A basilisk',
+  'A giant cyclops',
+  // Cryptids
+  'A chupacabra',
+  'The Lock Ness Monster',
+  'Big Foot',
+  'A yeti',
+  'Mothman',
+  // Fantasy
+  'A werewolf',
+  'A vampire',
+  'An elf',
+  'An ogre',
+  'A goblin',
+  'A griffin',
+  'A zombie',
+  'A kraken',
+  // Sci-fi
+  'A ghost',
+  'A demon',
+  'An alien',
+  'A shapeshifter',
+  'A body-snatcher',
+  'Cthulhu',
+  // People
+  'A pirate',
+  'A ninja',
+  'A samurai',
+  'A knight',
+  'A viking',
+  'Sherlock Holmes',
+  'Hercule Poirot',
+  // Animals
+  'A rabid squirrel',
+  'A raccoon with a knife',
+  'An angry mongoose',
+  'A king cobra',
+  'A komodo dragon',
+  'A silverback gorilla',
+  'A hippopotamus',
+  'A lion, tiger, and bear',
 ];
 
 const routeAction = server$(async function (formData) {
@@ -50,7 +92,7 @@ const routeAction = server$(async function (formData) {
   // const stream = openai.createStreamFromResponse(response);
 
   const prompt = new PromptTemplate({
-    template: `Battle of {opponent1} ("opponent1") vs {opponent2} ("opponent2")? Provide a creative and details explanation why they would win and what tactics they would employ. Format the response as "winner: 'opponent1' or 'opponent2'. reason: the reason they won." Return the winner using only their label ("opponent1" or "opponent2") and not their name.`,
+    template: `Battle of {opponent1} ("opponent1") vs {opponent2} ("opponent2")? Provide a creative and details explanation why they would win and what tactics they would employ. Format the response as "winner: opponent1 or opponent2. reason: the reason they won." Return the winner using only their label ("opponent1" or "opponent2") and not their name.`,
     inputVariables: ['opponent1', 'opponent2'],
   });
   const input = await prompt.format({ opponent1, opponent2 });
@@ -85,16 +127,12 @@ const createImgAction = server$(async function (formData) {
       .parse(formData);
 
     const mods = [
-      /** Theme */
+      /** Style */
       // 'Abstract',
       // 'Academic',
       // 'Action painting',
       // 'Aesthetic',
-      // 'Allover painting',
       // 'Angular',
-      // 'Appropriation',
-      // 'Architecture',
-      // 'Artifice',
       // 'Automatism',
       // 'Avant-garde',
       // 'Baroque',
@@ -102,8 +140,9 @@ const createImgAction = server$(async function (formData) {
       // 'Contemporary',
       // 'Cubism',
       // 'Cyberpunk',
-      'Digital art',
-      'photo',
+      // 'Digital art',
+      // 'photo',
+      // 'vector art',
       // 'Expressionism',
       // 'Fantasy',
       // 'Impressionism',
@@ -119,19 +158,15 @@ const createImgAction = server$(async function (formData) {
       // '3d-model',
       // 'analog-film',
       // 'anime',
-      // 'cinematic',
       // 'comic-book',
-      // 'digital-art',
       // 'enhance',
       // 'fantasy-art',
       // 'isometric',
       // 'line-art',
       // 'low-poly',
       // 'modeling-compound',
-      // 'neon-punk',
       // 'origami',
       // 'photographic',
-      // 'pixel-art',
       // 'tile-texture',
 
       /** Format */
@@ -143,13 +178,16 @@ const createImgAction = server$(async function (formData) {
       // 'oil painting',
       // 'unreal engine 5',
       // 'watercolor',
+      // 'cartoon',
+      // 'anime'
+      // 'colored pencil'
 
       /** Quality */
-      // 'high resolution',
+      'high resolution',
       // 'high-detail',
       // 'low-poly',
       // 'photographic',
-      'photorealistic',
+      // 'photorealistic',
       // 'realistic',
 
       /** Effects */
@@ -158,13 +196,13 @@ const createImgAction = server$(async function (formData) {
       // 'Dramatic',
       // 'dramatic lighting',
       // 'Dynamic lighting',
-      // 'epic',
+      'epic',
       // 'Portrait lighting',
       // 'Volumetric lighting',
     ];
 
     const prompt = new PromptTemplate({
-      template: `A battle between {opponent1} and {opponent2} where {${winner}} is winning, ${mods.join(
+      template: `Scene showing {opponent1} in a fight against {opponent2} where {${winner}} is winning, ${mods.join(
         ', '
       )}`,
       inputVariables: ['opponent1', 'opponent2'],
@@ -198,11 +236,16 @@ export default function () {
     setOptions({ [stateKey]: event.target.value });
   };
   function setRandomFight() {
-    const pair = fightPairs[Math.floor(Math.random() * fightPairs.length)];
+    const fighters = [...allFighters];
+    const i1 = Math.floor(Math.random() * fighters.length);
+    const fighter1 = fighters.splice(i1, 1)[0];
+    const i2 = Math.floor(Math.random() * fighters.length);
+    const fighter2 = fighters[i2];
+
     setState({ winner: '', text: '' });
     setOptions({
-      opponent1: pair[0],
-      opponent2: pair[1],
+      opponent1: fighter1,
+      opponent2: fighter2,
     });
   }
 
@@ -257,14 +300,17 @@ export default function () {
 
   return (
     <main>
-      <h1 class="text-3xl my-8">Who Would Win In A Fight Between...</h1>
+      <h1 class="text-5xl mt-8">AI of the Tiger</h1>
+      <p class="mb-8">
+        An AI tool to determine who would win in a fight between...
+      </p>
 
       <Form
         action={routeAction.url}
         method="post"
         class="grid gap-4"
         onSubmit={handleSubmitFight}
-        oncapture:input={() => setState({ winner: '' })}
+        oncapture:input={() => setState({ winner: '', text: '' })}
       >
         <div class="grid sm:grid-cols-2 gap-4">
           <Input
@@ -374,8 +420,8 @@ export default function () {
       </Dialog>
 
       <p class="mt-10 sm:mt-20 text-center">
-        Disclaimer: This app uses AI, which means things may come out a lil
-        wonky sometimes
+        Disclaimer: This app uses AI to generate content, so things may come out
+        a lil wonky sometimes
       </p>
     </main>
   );

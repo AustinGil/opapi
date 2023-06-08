@@ -2,7 +2,6 @@ import { splitProps } from 'solid-js';
 
 /**
  * @typedef {import("solid-js").JSX.SvgSVGAttributes<SVGSVGElement>} SVGAttributes
- * @typedef {keyof definitions} SvgDef
  */
 
 const definitions = {
@@ -14,8 +13,8 @@ const definitions = {
  * @param {SVGAttributes & {
  * alt: string,
  * } & (
- * { href: SvgDef, icon?: never } |
- * { icon: SvgDef, href?: never }
+ * { href: keyof definitions, icon?: never } |
+ * { icon: keyof definitions, href?: never }
  * )} p
  */
 export default function (p) {

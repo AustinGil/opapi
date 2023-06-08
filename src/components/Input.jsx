@@ -25,13 +25,7 @@ export function createInput() {
    * }} p
    */
   function Input(p) {
-    const [local, props] = splitProps(p, [
-      'class',
-      'label',
-      'type',
-      'value',
-      'options',
-    ]);
+    const [local, props] = splitProps(p, ['class', 'label', 'type', 'options']);
     props.id = props.id ?? `id_${randomString(6)}`;
 
     const isRadioCheckbox = ['radio', 'checkbox'].includes(local.type);
@@ -58,9 +52,6 @@ export function createInput() {
     } else {
       tag = 'input';
       props.type = local.type;
-      if (local.value != undefined) {
-        props.value = local.value;
-      }
     }
 
     function validate() {
