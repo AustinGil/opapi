@@ -71,11 +71,13 @@ const allFighters = [
   'A lion, tiger, and bear',
 ];
 
+const opponentSchema = zfd.text(z.string().max(100));
+
 const routeAction = server$(async function (formData) {
   const { opponent1, opponent2 } = zfd
     .formData({
-      opponent1: zfd.text(),
-      opponent2: zfd.text(),
+      opponent1: opponentSchema,
+      opponent2: opponentSchema,
     })
     .parse(formData);
 
@@ -120,8 +122,8 @@ const createImgAction = server$(async function (formData) {
   try {
     const { opponent1, opponent2, winner } = zfd
       .formData({
-        opponent1: zfd.text(),
-        opponent2: zfd.text(),
+        opponent1: opponentSchema,
+        opponent2: opponentSchema,
         winner: zfd.text(z.enum(['opponent1', 'opponent2'])),
       })
       .parse(formData);
@@ -202,9 +204,8 @@ const createImgAction = server$(async function (formData) {
     ];
 
     const prompt = new PromptTemplate({
-      template: `Scene showing {opponent1} in a fight against {opponent2} where {${winner}} is winning, ${mods.join(
-        ', '
-      )}`,
+      template: `{opponent1} ${winner === 'opponent1' ? 'winning' : 'losing'
+        } in a fight against {opponent2}, ${mods.join(', ')}`,
       inputVariables: ['opponent1', 'opponent2'],
     });
     const input = await prompt.format({ opponent1, opponent2, winner });
