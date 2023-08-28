@@ -1,5 +1,5 @@
 import { Show } from 'solid-js';
-import server$ from 'solid-start/server';
+import server$, { createServerAction$ } from 'solid-start/server';
 import { createStore } from 'solid-js/store';
 import { z } from 'zod';
 import { zfd } from 'zod-form-data';
@@ -72,51 +72,6 @@ const allFighters = [
 ];
 
 const opponentSchema = zfd.text(z.string().max(100));
-
-const routeAction = server$(async function (formData) {
-  const { opponent1, opponent2 } = zfd
-    .formData({
-      opponent1: opponentSchema,
-      opponent2: opponentSchema,
-    })
-    .parse(formData);
-
-  // const response = await openai.createCompletion(
-  //   {
-  //     model: 'text-davinci-003',
-  //     prompt: prompt,
-  //     temperature: 0,
-  //     max_tokens: 1000,
-  //     stream: true,
-  //   },
-  //   { responseType: 'stream' }
-  // );
-  // const stream = openai.createStreamFromResponse(response);
-
-  const prompt = new PromptTemplate({
-    template: `Battle of {opponent1} ("opponent1") vs {opponent2} ("opponent2")? Provide a creative and details explanation why they would win and what tactics they would employ. Format the response as "winner: opponent1 or opponent2. reason: the reason they won." Return the winner using only their label ("opponent1" or "opponent2") and not their name.`,
-    inputVariables: ['opponent1', 'opponent2'],
-  });
-  const input = await prompt.format({ opponent1, opponent2 });
-
-  const model = new OpenAI({ temperature: 1, streaming: true });
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      model.call(input, undefined, [
-        {
-          handleLLMNewToken(token) {
-            controller.enqueue(token);
-          },
-          handleLLMEnd() {
-            controller.close();
-          },
-        },
-      ]);
-    },
-  });
-  return new Response(stream);
-});
 
 const createImgAction = server$(async function (formData) {
   try {
@@ -204,8 +159,9 @@ const createImgAction = server$(async function (formData) {
     ];
 
     const prompt = new PromptTemplate({
-      template: `{opponent1} ${winner === 'opponent1' ? 'winning' : 'losing'
-        } in a fight against {opponent2}, ${mods.join(', ')}`,
+      template: `{opponent1} and {opponent2} in a battle to the death, ${mods.join(
+        ', '
+      )}`,
       inputVariables: ['opponent1', 'opponent2'],
     });
     const input = await prompt.format({ opponent1, opponent2, winner });
@@ -223,6 +179,94 @@ const createImgAction = server$(async function (formData) {
 });
 
 export default function () {
+  const [routeAction, action] = createServerAction$(async function (formData) {
+    const { opponent1, opponent2 } = zfd
+      .formData({
+        opponent1: opponentSchema,
+        opponent2: opponentSchema,
+      })
+      .parse(formData);
+
+    const prompt = new PromptTemplate({
+      template: `Who would win in a fight between {opponent1} ("opponent1") and {opponent2} ("opponent2")? Provide a creative and details explanation why they would win and what tactics they would employ. Format the response as "winner: opponent1 or opponent2. reason: the reason they won." Return the winner using only their label ("opponent1" or "opponent2") and not their name.`,
+      inputVariables: ['opponent1', 'opponent2'],
+    });
+    const input = await prompt.format({ opponent1, opponent2 });
+
+    const response = await openai.createCompletion(
+      {
+        model: 'text-davinci-003',
+        prompt: input,
+        temperature: 0,
+        max_tokens: 100,
+        stream: true,
+      },
+      { responseType: 'stream' }
+    );
+
+    return new Response(
+      new ReadableStream({
+        async start(controller) {
+          response.data.on('data', (data) => {
+            console.log(`s:${data.toString()}:e`);
+            data = data.toString().slice(6).trim();
+            if (data === '[DONE]') {
+              controller.close();
+              return;
+            }
+            data = data.replace(/\n/g, '\\n');
+            const json = JSON.parse(data);
+            const text = json.choices[0].text || '';
+            controller.enqueue(text);
+          });
+        },
+      })
+    );
+    // You're a professional fighting judge from Liverpool and you speak mostly in cockney slang
+
+    // https://regex101.com/r/R4QgmZ/1
+    // const regex = /data:\s*(.*)/g;
+    // let match;
+    // while ((match = regex.exec(text)) !== null) {
+    //   console.log(match[1]); // logs each captured instance of content after 'data:'
+    // }
+
+    // return new Response(
+    //   new ReadableStream({
+    //     start(controller) {
+    //       (function inc(val) {
+    //         controller.enqueue(val.toString());
+    //         setTimeout(() => {
+    //           if (!val) {
+    //             controller.close();
+    //             return;
+    //           }
+    //           inc(val - 1);
+    //         }, 1000);
+    //       })(4);
+    //     },
+    //   })
+    // );
+
+    // const model = new OpenAI({ temperature: 1, streaming: true });
+
+    // const stream = new ReadableStream({
+    //   async start(controller) {
+    //     model.call(input, undefined, [
+    //       {
+    //         handleLLMNewToken(token) {
+    //           controller.enqueue(token);
+    //         },
+    //         handleLLMEnd() {
+    //           controller.close();
+    //         },
+    //       },
+    //     ]);
+    //   },
+    // });
+    // return new Response(stream);
+  });
+
   const [getState, setState] = createStore({
     text: '',
     loading: false,
@@ -253,13 +297,36 @@ export default function () {
   /** @param {SubmitEvent} event */
   async function handleSubmitFight(event) {
     event.preventDefault();
+
     setState({ loading: true, text: '', winner: '' });
 
-    await jsSubmitForm(event.target, {
-      onData(chunk) {
-        setState((previous) => ({ text: previous.text + chunk }));
-      },
-    });
+    const response = await action(new FormData(event.target));
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let processNextChunk = true;
+
+    while (processNextChunk) {
+      const { value, done } = await reader.read();
+      const chunkValue = decoder.decode(value);
+      setState((previous) => ({ text: previous.text + chunkValue }));
+      processNextChunk = !done;
+    }
+
+    // if (!prompt.result) return
+    // // console.log(prompt.result)
+    // // setText(prompt.result?.trim())
+    // const reader = prompt.result.body.getReader();
+    // const decoder = new TextDecoder();
+    // let processNextChunk = true;
+
+    // while (processNextChunk) {
+    //   const { value, done } = await reader.read();
+    //   const chunkValue = decoder.decode(value);
+    //   setText((previous) => (previous + chunkValue))
+    //   // setState((previous) => ({ text: previous.text + chunkValue }));
+    //   processNextChunk = !done;
+    // }
 
     const matchPattern = /winner:\s+(\w+)\.\s+reason:\s+.*/gi;
     const matches = matchPattern.exec(getState.text);
@@ -306,9 +373,7 @@ export default function () {
         An AI tool to determine who would win in a fight between...
       </p>
 
-      <Form
-        action={routeAction.url}
-        method="post"
+      <action.Form
         class="grid gap-4"
         onSubmit={handleSubmitFight}
         oncapture:input={() => setState({ winner: '', text: '' })}
@@ -366,7 +431,7 @@ export default function () {
             <Svg icon="icon-dice" alt="Random" />
           </Button>
         </div>
-      </Form>
+      </action.Form>
 
       {!!getState.text.length && (
         <Card class="my-4">
@@ -424,6 +489,18 @@ export default function () {
         Disclaimer: This app uses AI to generate content, so things may come out
         a lil wonky sometimes
       </p>
+
+      <footer class="my-10 sm:mt-20 px-4 text-center">
+        <p>
+          Built by <a href="https://austingil.com">Austin Gil</a>. Powered
+          by <a href="https://www.akamai.com/">Akamai Connected Cloud</a>.
+        </p>
+        <p>
+          <a href="https://linode.com/austingil">
+            Get $100 in free cloud computing credits.
+          </a>
+        </p>
+      </footer>
     </main>
   );
 }
